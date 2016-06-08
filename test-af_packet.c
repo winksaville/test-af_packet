@@ -29,4 +29,6 @@ int main(int argc, const char* argv[]) {
   if (fd >= 0) {
     close(fd);
   }
+
+  return (fd >= 0) ? 0 : 1;
 }
