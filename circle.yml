@@ -12,4 +12,5 @@ test:
     - make
 
   override:
-    - ./test-af_packet 
+    - make run
+    - make run-no-sudo
