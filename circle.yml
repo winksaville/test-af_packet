@@ -1,0 +1,15 @@
+dependencies:
+  pre:
+    - sudo apt-get update
+    #- sudo apt-get install gcc-5; sudo apt-get install g++-5
+    #- sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 100
+    #- sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-5 100
+
+test:
+  pre:
+    - gcc --version
+    - g++ --version
+    - make
+
+  override:
+    - ./test-af_packet 
