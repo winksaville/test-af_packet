@@ -27,11 +27,9 @@ int get_ifindex(int fd, const char* ifname) {
   struct ifreq ifr;
   size_t max_len_ifr_name = sizeof(ifr.ifr_name) - 1;
 
-  printf("sizeof(ifr.ifr_name)=%d\n", sizeof(ifr.ifr_name));
-
   // Copy ifname to ifr.ifr_name if it fits
   size_t len = strlen(ifname);
-  printf("sizeof(ifr.ifr_name)=%d len=%d\n", sizeof(ifr.ifr_name), len);
+  printf("sizeof(ifr.ifr_name)=%ld len=%ld\n", sizeof(ifr.ifr_name), len);
   if (len > max_len_ifr_name) {
     return -1;
   }

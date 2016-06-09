@@ -2,7 +2,7 @@
 .SUFFIXES:
 
 test-af_packet : test-af_packet.c
-	gcc -std=c11 $< -o $@
+	gcc -Wall -Wpedantic -std=c11 $< -o $@
 
 run : test-af_packet
 	sudo ./test-af_packet ${IFN}
