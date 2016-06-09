@@ -9,8 +9,8 @@ test:
   pre:
     - uname -a
     - gcc --version
-    - sudo ip tuntap add name tap0 mode tap
+    #- sudo ip tuntap add name tap0 mode tap
     - ip link show
 
   override:
-    - make IFN=tap0 run
+    - make IFN=eth0 run
