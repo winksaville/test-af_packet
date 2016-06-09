@@ -1,15 +1,16 @@
-dependencies:
-  pre:
-    - sudo apt-get update
+#dependencies:
+  #pre:
+    #- sudo apt-get update
     #- sudo apt-get install gcc-5; sudo apt-get install g++-5
     #- sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 100
     #- sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-5 100
 
 test:
   pre:
+    - uname -a
     - gcc --version
-    - g++ --version
-    - make
+    - sudo ip tuntap add name tap0 mode tap
+    - ip link show
 
   override:
-    - make run
+    - make IFN=tap0 run
