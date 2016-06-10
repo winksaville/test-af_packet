@@ -14,4 +14,4 @@ test:
     - ip link show
 
   override:
-    - @echo "TUN/TAP not supported in circle ci"
+    - echo "TUN/TAP not supported in circle ci" ; exit 1
