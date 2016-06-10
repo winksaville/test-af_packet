@@ -9,8 +9,9 @@ test:
   pre:
     - uname -a
     - gcc --version
+    # tun/tap NOT supported
     #- sudo ip tuntap add name tap0 mode tap
     - ip link show
 
   override:
-    - make IFN=eth0 run
+    - @echo "TUN/TAP not supported in circle ci"
