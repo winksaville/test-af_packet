@@ -11,4 +11,4 @@ run-no-sudo : test-af_packet
 	./test-af_packet ${IFN}
 
 clean :
-	rm test-af_packet
+	@rm test-af_packet
