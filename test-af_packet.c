@@ -20,18 +20,55 @@
 
 #include <stdio.h>
 
-#define ON_EXPR_TRUE(s, x, label) { \
+#define ON_TRUE(x, label) { \
   int result = (x); \
-  if (result != 0) { \
-    printf("%s: result '%s' == %d in %s:%d function %s\n", \
-           s, #x, result, __FILE__, __LINE__, __func__); \
+  if (result) { \
+    printf("ON_TRUE: result '%s' == %d in %s:%d function %s\n", \
+           #x, result, __FILE__, __LINE__, __func__); \
     error |= result; \
     goto label; \
   } \
 }
 
-#define ON_NZ(x, label) ON_EXPR_TRUE("ON_NZ", ((x) != 0), label)
-#define ON_TRUE(x, label) ON_EXPR_TRUE("ON_TRUE", (x), label)
+#define ON_FALSE(x, label) { \
+  int result = (x); \
+  if (!result) { \
+    printf("ON_FALSE: result '%s' == %d in %s:%d function %s\n", \
+           #x, result, __FILE__, __LINE__, __func__); \
+    error |= !result; \
+    goto label; \
+  } \
+}
+
+#define ON_Z(x, label) { \
+  int result = (x); \
+  if (result == 0) { \
+    printf("ON_Z: result '%s' == %d in %s:%d function %s\n", \
+           #x, result, __FILE__, __LINE__, __func__); \
+    error |= result == 0; \
+    goto label; \
+  } \
+}
+
+#define ON_NZ(x, label) { \
+  int result = (x); \
+  if (result != 0) { \
+    printf("ON_NZ: result '%s' == %d in %s:%d function %s\n", \
+           #x, result, __FILE__, __LINE__, __func__); \
+    error |= result; \
+    goto label; \
+  } \
+}
+
+#define ON_LZ(x, label) { \
+  int result = (x); \
+  if (result < 0) { \
+    printf("ON_LZ: result '%s' == %d in %s:%d function %s\n", \
+           #x, result, __FILE__, __LINE__, __func__); \
+    error |= result < 0; \
+    goto label; \
+  } \
+}
 
 /**
  * Display memory
@@ -94,7 +131,7 @@ int get_ifindex(int fd, const char* ifname, int* ifindex) {
   ON_NZ (IfReq_set_ifr_name(&ifr, ifname), done);
 
   // Issue iotcl to get the index
-  ON_TRUE (ioctl(fd, SIOCGIFINDEX, &ifr) < 0, done);
+  ON_LZ (ioctl(fd, SIOCGIFINDEX, &ifr), done);
 
   *ifindex = ifr.ifr_ifindex;
 
@@ -115,7 +152,7 @@ int get_ethernet_mac_addr(int fd, const char* ifname, unsigned char mac_addr[ETH
   ON_NZ (IfReq_set_ifr_name(&ifr, ifname), done);
 
   // Issue iotcl to get the hardware/mac address
-  ON_TRUE (ioctl(fd, SIOCGIFHWADDR, &ifr) < 0, done);
+  ON_LZ (ioctl(fd, SIOCGIFHWADDR, &ifr), done);
 
 #if 0
   println_hex("ifr.ifr_hwaddr.sa_data=", &ifr.ifr_hwaddr.sa_data, sizeof(ifr.ifr_hwaddr.sa_data), ':');
@@ -145,7 +182,7 @@ int get_ethernet_ipv4_addr(int fd, const char* ifname, struct sockaddr_in* ipv4_
   ON_NZ (IfReq_set_ifr_name(&ifr, ifname), done);
 
   // Issue iotcl to get the address
-  ON_TRUE (ioctl(fd, SIOCGIFADDR, &ifr) < 0, done);
+  ON_LZ (ioctl(fd, SIOCGIFADDR, &ifr), done);
 
   // Be sure address fits
   _Static_assert(sizeof(*ipv4_addr) <= sizeof(ifr.ifr_addr),
@@ -184,30 +221,26 @@ struct sockaddr_ll* sockaddr_ethernet_init(struct sockaddr_ll* sa,
  */
 int send_ethernet_arp_ipv4(int fd, const char* ifname, const char* ipv4_addr_str) {
   int error = 0;
-#if 0
+
+  printf("send_ethernet_arp_ipv4:+fd=%d ifname=%s ipv4=%s\n",
+      fd, ifname, ipv4_addr_str);
+
   struct ether_arp req;
+
+  // Get the interface index
   int ifindex;
-
-  // Convert ipv4_addr_str to target address
-  struct in_addr target_ip_addr = {0};
-  ON_NZ (inet_aton(ipv4_addr_str, &target_ip_addr) != 0, done);
-
-  // Get Source hardware address and ipv4 address
-  ON_NZ (get_ethernet_mac_addr(fd, ifname, req.arp_sha), done);
-
-  struct sockaddr_in ipv4_addr;
-  ON_NZ (get_ethernet_ipv4_addr(fd, ifname, &ipv4_addr), done);
-  memcpy(req.arp_spa, ipv4_addr.sin_addr, sizeof(req.arp_spa));
+  ON_NZ (get_ifindex(fd, ifname, &ifindex), done);
+  printf("send_ethernet_arp_ipv4: ifname=%s findex=%d\n", ifname, ifindex);
 
   // Initialize addr to the Ethernet broadcast address and ARP protocol
   struct sockaddr_ll addr;
   unsigned char ethernet_broadcast_addr[ETHER_ADDR_LEN] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
 
   sockaddr_ethernet_init(&addr, ethernet_broadcast_addr, ifindex, ETH_P_ARP);
-  ON_NZ (addr.sll_ifindex != ifindex), done);
-  ON_NZ (addr.sll_protocol != htons(ETH_P_ARP)), done);
-  ON_NZ (memcmp(addr.sll_addr, ethernet_broadcast_addr, ETHER_ADDR_LEN) != 0), done);
-  printf("addr: family=%d ifindex=%d protocol=%d\n", addr.sll_family, addr.sll_ifindex, addr.sll_protocol);
+  ON_TRUE (addr.sll_ifindex != ifindex, done);
+  ON_TRUE (addr.sll_protocol != htons(ETH_P_ARP), done);
+  ON_NZ (memcmp(addr.sll_addr, ethernet_broadcast_addr, ETHER_ADDR_LEN), done);
+  printf("send_ethernet_arp_ipv4: family=%d ifindex=%d protocol=%d\n", addr.sll_family, addr.sll_ifindex, addr.sll_protocol);
 
   // Initialize ethernet arp request
   req.arp_hrd = htons(ARPHRD_ETHER);
@@ -215,11 +248,32 @@ int send_ethernet_arp_ipv4(int fd, const char* ifname, const char* ipv4_addr_str
   req.arp_hln = ETHER_ADDR_LEN;
   req.arp_pln = sizeof(in_addr_t);
   req.arp_op = htons(ARPOP_REQUEST);
-  memset(&req.arp_tha, 0, sizeof(req.arp_tha));
+
+  // Convert ipv4_addr_str to target address and set arp target protocol address (arp_tpa)
+  struct in_addr target_ip_addr = {0};
+  ON_Z (inet_aton(ipv4_addr_str, &target_ip_addr), done);
   memcpy(&req.arp_tpa, &target_ip_addr, sizeof(req.arp_tpa));
 
+  // Zero the arp target hardware address (arp_tha)
+  memset(&req.arp_tha, 0, sizeof(req.arp_tha));
+
+  // Get Source hardware address to arp source hardware address (arp_sha)
+  ON_NZ (get_ethernet_mac_addr(fd, ifname, req.arp_sha), done);
+  println_hex("send_ethernet_arp_ipv4: req.arp_sha=", req.arp_sha, sizeof(req.arp_sha), ':');
+
+  // Get source ipv4 address to arp source protocol address (arp_spa)
+  struct sockaddr_in ipv4_addr;
+  ON_NZ (get_ethernet_ipv4_addr(fd, ifname, &ipv4_addr), done);
+  memcpy(req.arp_spa, &ipv4_addr.sin_addr, sizeof(req.arp_spa));
+  println_hex("send_ethernet_arp_ipv4: req.arp_spa=", req.arp_spa, sizeof(req.arp_spa), '.');
+
+  // Broadcast the arp request
+  int count = sendto(fd, &req, sizeof(req), 0, (struct sockaddr*)&addr, sizeof(addr));
+  ON_LZ (count, done);
+  printf("send_ethernet_arp_ipv4: sent count=%d\n", count);
+
 done:
-#endif
+  printf("send_ethernet_arp_ipv4:-error=%d\n", error);
   return error;
 }
 
@@ -231,16 +285,20 @@ int main(int argc, const char* argv[]) {
     printf("argv[%d]=%s\n", i, argv[i]);
   }
 
-  if (argc != 2) { 
-    printf("test-af_packet: Usage param $1 is interface name\n");
+  if (argc != 3) {
+    printf("Get ethernet MAC address of for target IPV4 address\n\n");
+    printf("Usage:\n");
+    printf("  %s <link name> <target IPV4 address>\n", argv[0]);
+    printf("  link name: Name of NIC such as \"tap0\"\n");
+    printf("  target IPV4 address: A dotted decimal IPV4 address\n");
     error = 1;
     goto done;
   }
 
   // Open an AF_PACKET socket
   int fd = socket(AF_PACKET, SOCK_DGRAM, htons(ETH_P_ARP));
+  ON_LZ (fd, done);
   printf("fd=%d\n", fd);
-  ON_TRUE (fd < 0, done);
 
   // Get interface segment
   int ifindex;
@@ -256,6 +314,9 @@ int main(int argc, const char* argv[]) {
   struct sockaddr_in ipv4_addr;
   ON_NZ (get_ethernet_ipv4_addr(fd, argv[1], &ipv4_addr), done);
   println_dec("ipv4_addr=", &ipv4_addr.sin_addr, 4, '.');
+
+  // Send arp ipv4
+  ON_NZ (send_ethernet_arp_ipv4(fd, argv[1], argv[2]), done);
 
 done:
   if (fd >= 0) {
