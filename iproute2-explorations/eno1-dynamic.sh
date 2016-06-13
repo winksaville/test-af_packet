@@ -5,7 +5,7 @@
 set -x
 
 # flush current settings
-./eno1-flush.sh
+./flush.sh eno1
 
 # Toggle eno1 down/up which causes dhcp to get new haddresses
 sudo ip link set eno1 down

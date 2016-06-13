@@ -5,7 +5,7 @@
 set -x
 
 # Flush current settings for eno1
-./eno1-flush.sh
+./flush.sh eno1
 
 # Add static address
 # From [cyberciti.biz ip examples](http://www.cyberciti.biz/faq/linux-ip-command-examples-usage-syntax/#4)
