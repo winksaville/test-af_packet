@@ -323,6 +323,17 @@ int main(int argc, const char* argv[]) {
   // Send arp ipv4
   ON_NZ (send_ethernet_arp_ipv4(fd, argv[1], argv[2]), done);
 
+  // Read response
+  struct ether_arp resp;
+  unsigned char addr[256];
+  socklen_t addrlen;
+
+  int count = recvfrom(fd, &resp, sizeof(resp), 0, (struct sockaddr*)addr, &addrlen);
+  ON_LZ (count, done);
+  printf("recvfro: recv count=%d addrlen=%d\n", count, addrlen);
+  println_hex("addr=", addr, addrlen, ':');
+  println_hex("resp==", (unsigned char*)&resp, count, ',');
+
 done:
   if (fd >= 0) {
     close(fd);
