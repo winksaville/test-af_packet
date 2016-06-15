@@ -234,13 +234,16 @@ int send_ethernet_arp_ipv4(int fd, const char* ifname, const char* ipv4_addr_str
 
   // Initialize addr to the Ethernet broadcast address and ARP protocol
   struct sockaddr_ll addr;
-  unsigned char ethernet_broadcast_addr[ETHER_ADDR_LEN] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
+  unsigned char ethernet_broadcast_addr[ETHER_ADDR_LEN] = {
+    0xff, 0xff, 0xff, 0xff, 0xff, 0xff
+  };
 
   sockaddr_ethernet_init(&addr, ethernet_broadcast_addr, ifindex, ETH_P_ARP);
   ON_TRUE (addr.sll_ifindex != ifindex, done);
   ON_TRUE (addr.sll_protocol != htons(ETH_P_ARP), done);
   ON_NZ (memcmp(addr.sll_addr, ethernet_broadcast_addr, ETHER_ADDR_LEN), done);
-  printf("send_ethernet_arp_ipv4: family=%d ifindex=%d protocol=%d\n", addr.sll_family, addr.sll_ifindex, addr.sll_protocol);
+  printf("send_ethernet_arp_ipv4: family=%d ifindex=%d protocol=%x\n",
+      addr.sll_family, addr.sll_ifindex, addr.sll_protocol);
 
   // Initialize ethernet arp request
   req.arp_hrd = htons(ARPHRD_ETHER);
@@ -259,13 +262,15 @@ int send_ethernet_arp_ipv4(int fd, const char* ifname, const char* ipv4_addr_str
 
   // Get Source hardware address to arp source hardware address (arp_sha)
   ON_NZ (get_ethernet_mac_addr(fd, ifname, req.arp_sha), done);
-  println_hex("send_ethernet_arp_ipv4: req.arp_sha=", req.arp_sha, sizeof(req.arp_sha), ':');
+  println_hex("send_ethernet_arp_ipv4: req.arp_sha=",
+      req.arp_sha, sizeof(req.arp_sha), ':');
 
   // Get source ipv4 address to arp source protocol address (arp_spa)
   struct sockaddr_in ipv4_addr;
   ON_NZ (get_ethernet_ipv4_addr(fd, ifname, &ipv4_addr), done);
   memcpy(req.arp_spa, &ipv4_addr.sin_addr, sizeof(req.arp_spa));
-  println_hex("send_ethernet_arp_ipv4: req.arp_spa=", req.arp_spa, sizeof(req.arp_spa), '.');
+  println_hex("send_ethernet_arp_ipv4: req.arp_spa=",
+      req.arp_spa, sizeof(req.arp_spa), '.');
 
   // Broadcast the arp request
   int count = sendto(fd, &req, sizeof(req), 0, (struct sockaddr*)&addr, sizeof(addr));
