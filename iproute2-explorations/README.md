@@ -7,16 +7,14 @@ to use static routes and then switch back to dynamic routes. I've created
 three scripts to capture something that works. One key was to use flush
 see eno1-flush.sh to flush out existing configuration.
 
-The eno1-flush.sh is called as the first thing in eno1-static.sh and
-eno1-dynamic.sh.
+In dynamic.sh removes if2 and bridge and uses dhcpcd to bring up if1
 
-In eno1-dynamic.sh I just bring eno1 interface down then up and it
-dhclient seems to do its thing and gets a new address and updates
-the routing table.
+In static.sh removes if2 and bridge and sets up static ip and routes for if1
 
-In eno1-static.sh I use ip addr and ip route commands note I do not
-use `ip link set eno1 up` or `down` because if I do I end up with
-both static and the dynamic addersses.
+In bridge.sh it creates a bridge with two interfaces, if1 and if2 and
+assigns a static address to the bridge.
 
-NOTE: All this is just something that 'works' right now, I suspect as I
-learn more I find the 'right' way to do it.
+These are probably not the "right" way but they do work sometimes, althoug
+I've also lost connectivity to the internet and had to reboot.
+
+SO BE CAREFUL
