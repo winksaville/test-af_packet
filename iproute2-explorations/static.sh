@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Switch to static address for if1 and delete if2 and br
 #
 # [biproute2 cheat sheet - Daniil Baturi](http://baturin.org/docs/iproute2/)

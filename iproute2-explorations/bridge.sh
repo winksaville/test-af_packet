@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Some docs for iproute2 see:
 # [biproute2 cheat sheet - Daniil Baturi](http://baturin.org/docs/iproute2/)
 # [LInux Advanced Routing & Traffic Control HOWTO](http://lartc.org/howto/index.html)
