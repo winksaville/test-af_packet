@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Switch to dynamic ip for if1 and delete if2 and br
 #set -x
 

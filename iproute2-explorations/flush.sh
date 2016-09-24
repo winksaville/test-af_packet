@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # flush a interface/dev param1 is the interface
 set -x
 

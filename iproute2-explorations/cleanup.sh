@@ -1,5 +1,4 @@
-#!/bin/bash
-# flush if1, delte if2 and br
+#!/usr/bin/env bash
 #set -x
 
 # Defaults
