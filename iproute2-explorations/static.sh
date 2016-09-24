@@ -66,7 +66,8 @@ sudo ip address add ${args[if1_ip]} brd + dev ${args[if1]}
 sudo ip route add default via ${args[gw]}
 
 # Add static route
-sudo ip route add ${args[if1_route]} metric 100 scope global dev ${args[if1]}
+#sudo ip route add ${args[if1_route]} metric 100 scope global dev ${args[if1]}
+sudo ip route add ${args[if1_route]} dev ${args[if1]}
 
 # Display results
 sudo ip addr show ; ip route show
