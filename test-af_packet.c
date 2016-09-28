@@ -292,6 +292,15 @@ void init_broadcast_sockaddr_ll(struct sockaddr_ll* pSockAddrLl,
   init_sockaddr_ll(pSockAddrLl, ethernet_broadcast_addr, ifindex, ETH_P_ARP);
 }
 
+void hit_return_to_continue(void) {
+  printf("Hit return to continue: ");
+  fflush(stdout);
+  char ch;
+  do
+    ch = getchar();
+  while (ch != '\n');
+}
+
 /**
  * send_arp
  *
@@ -347,6 +356,12 @@ int send_ethernet_arp_ipv4(int fd, const char* ifname, const char* ipv4_addr_str
 #else // Use sendmsg
 
   struct sockaddr_ll dst_addr;
+
+  printf("try to bind to %s to see it tap0 is running\n", ifname);
+  ON_LZ (setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, ifname, strlen(ifname)), done);
+  printf("Bound to %s\n", ifname);
+
+  //hit_return_to_continue();
 
   // Get the interface index
   int ifindex;
@@ -447,6 +462,8 @@ int main(int argc, const char* argv[]) {
 
   // Send arp ipv4
   ON_NZ (send_ethernet_arp_ipv4(fd, argv[1], argv[2]), done);
+
+  //hit_return_to_continue();
 
   // Read response
   uint8_t resp[128];
