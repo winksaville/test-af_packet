@@ -40,7 +40,7 @@ function parse_args() {
   # First interface ip address
   [ "$if1_ip" == "" ] && args[if1_ip]=${DFLT_IF1_IP} || args[if1_ip]="$if1_ip"
   # Second interface
-  [ "$if2" == "" ] && args[if2]=${DFLT_IF2} || args[if2]="$if1"
+  [ "$if2" == "" ] && args[if2]=${DFLT_IF2} || args[if2]="$if2"
   # Second interface ip address
   [ "$if2_ip" == "" ] && args[if2_ip]=${DFLT_IF2_IP} || args[if2_ip]="$if2_ip"
   # bridge
